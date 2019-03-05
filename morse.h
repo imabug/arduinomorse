@@ -28,12 +28,12 @@
 // PARIS WPM measurement: 50; CODEX WPM measurement: 60 (Wikipedia:Morse_code)
 #define DITS_PER_WORD	50
 // Pass to SpeakerMorseSender as carrierFrequency to suppress the carrier.
-#define CARRIER_FREQUENCY_NONE	-1
+#define CARRIER_FREQUENCY_NONE	0
 
 // Bitmasks are 1 for dah and 0 for dit, in left-to-right order;
 //	the sequence proper begins after the first 1 (a sentinel).
 //	Credit for this scheme to Mark VandeWettering K6HX ( brainwagon.org ).
-typedef int             morseTiming_t;
+typedef unsigned int             morseTiming_t;
 typedef unsigned char	morseBitmask_t; // see also MAX_TIMINGS
 #define MORSE_BITMASK_HIGH_BIT	B10000000
 
@@ -160,6 +160,7 @@ public:
 	 * Set the words per minute (based on PARIS timing).
 	 */
 	void setWPM(float wpm);
+
 	/**
 	 * Set the duration, in milliseconds, of a DIT.
 	 */
@@ -172,12 +173,16 @@ public:
 	void setMessage(const String newMessage);
 
 	/**
-	 * Send the entirety of the current message before returning.
+	 * Send the entirety of the current message before returning. See the "simple"
+	 * example, which uses sendBlocking to send one message.
 	 */
 	void sendBlocking();
 
 	/**
-	 * Prepare to send and begin sending the current message.
+	 * Prepare to send and begin sending the current message. After calling this,
+	 * call continueSending repeatedly until it returns false to finish sending
+	 * the message. See the "speeds" example, which calls startSending and
+	 * continueSending on two different senders.
 	 */
 	void startSending();
 
@@ -228,11 +233,27 @@ class SpeakerMorseSender: public MorseSender {
  * Sends Morse on a digital output pin.
  */
 class LEDMorseSender: public MorseSender {
+	private:
+		bool activeLow;
 	protected:
 		virtual void setOn();
 		virtual void setOff();
 	public:
-		LEDMorseSender(int outputPin, float wpm=WPM_DEFAULT);
+		/**
+		 * Creates a LED Morse code sender with the given GPIO pin.  The optional
+		 * boolean activeLow indicates LED is ON with digital LOW value.
+		 * @param outputPin GPIO pin number
+		 * @param activeLow set to true to indicate the LED ON with digital LOW value.  default: false
+		 * @param wpm words per minute, default: WPM_DEFAULT
+		 */
+		LEDMorseSender(int outputPin, bool activeLow = false, float wpm=WPM_DEFAULT);
+
+		/**
+		 * Creates a LED Morse code sender with the given GPIO pin.  This constructor is for backward compability.
+		 * @param outputPin GPIO pin number
+		 * @param wpm words per minute
+		 */
+		LEDMorseSender(int outputPin, float wpm);
 };
 
 

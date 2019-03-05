@@ -105,12 +105,12 @@ void MorseSender::setup() { pinMode(pin, OUTPUT); }
 
 void MorseSender::setWPM(float wpm)
 {
-	setSpeed((morseTiming_t)(1000.0*60.0/(max(1.0, wpm)*DITS_PER_WORD)));
+	setSpeed((morseTiming_t)(1000.0*60.0/(max(1.0f, wpm)*DITS_PER_WORD)));
 }
 
 void MorseSender::setSpeed(morseTiming_t duration)
 {
-	DIT = max(1, duration);
+	DIT = max(duration, (morseTiming_t) 1);
 	DAH = 3*DIT;
 }
 
@@ -212,11 +212,12 @@ SpeakerMorseSender::SpeakerMorseSender(
 
 // LEDMorseSender
 
-void LEDMorseSender::setOn() { digitalWrite(pin, HIGH); }
-void LEDMorseSender::setOff() { digitalWrite(pin, LOW); }
+void LEDMorseSender::setOn() { digitalWrite(pin, activeLow ? LOW : HIGH); }
+void LEDMorseSender::setOff() { digitalWrite(pin, activeLow ? HIGH : LOW); }
+LEDMorseSender::LEDMorseSender(int outputPin, bool activeLow, float wpm)
+	: MorseSender(outputPin, wpm), activeLow(activeLow) {};
 LEDMorseSender::LEDMorseSender(int outputPin, float wpm)
-	: MorseSender(outputPin, wpm) {};
-
+	: MorseSender(outputPin, wpm), activeLow(false) {};
 
 // PWMMorseSender
 
